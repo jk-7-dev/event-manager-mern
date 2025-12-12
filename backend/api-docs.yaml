@@ -1,0 +1,270 @@
+openapi: "3.0.0"
+info:
+  title: Event Manager API
+  description: API for managing events, bookings, and authentication.
+  version: "1.0.0"
+  contact:
+    name: "Developer"
+servers:
+  - url: http://localhost:5000
+    description: Local Development Server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: User already exists
+  /api/auth/login:
+    post:
+      summary: Login user
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: Successful login (returns Token)
+        '401':
+          description: Invalid credentials
+  /api/events:
+    get:
+      summary: Get all events
+      tags:
+        - Events
+      security: []
+      responses:
+        '200':
+          description: List of all events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+    post:
+      summary: Create an event (Admin Only)
+      tags:
+        - Events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventInput'
+      responses:
+        '201':
+          description: Event created successfully
+        '401':
+          description: Unauthorized (Admin access required)
+  /api/events/{id}:
+    get:
+      summary: Get single event details
+      tags:
+        - Events
+      security: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The event ID
+      responses:
+        '200':
+          description: Event details found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Event not found
+    delete:
+      summary: Delete an event (Admin Only)
+      tags:
+        - Events
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The event ID to delete
+      responses:
+        '200':
+          description: Event deleted successfully
+        '404':
+          description: Event not found
+  /api/bookings:
+    post:
+      summary: Book tickets
+      tags:
+        - Bookings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - eventId
+                - count
+              properties:
+                eventId:
+                  type: string
+                  example: "654321..."
+                count:
+                  type: integer
+                  minimum: 1
+                  example: 2
+      responses:
+        '201':
+          description: Booking successful
+        '400':
+          description: Not enough tickets or invalid data
+  /api/bookings/mybookings:
+    get:
+      summary: Get current user's bookings
+      tags:
+        - Bookings
+      responses:
+        '200':
+          description: List of user bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+  /api/bookings/verify/{ticketId}:
+    get:
+      summary: Verify ticket status (Public)
+      tags:
+        - Bookings
+      security: []
+      parameters:
+        - in: path
+          name: ticketId
+          schema:
+            type: string
+          required: true
+          description: Unique Ticket ID (e.g. TKT-123...)
+      responses:
+        '200':
+          description: Valid ticket details
+        '404':
+          description: Ticket not found
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        date:
+          type: string
+          format: date-time
+        location:
+          type: string
+        price:
+          type: number
+        totalTickets:
+          type: integer
+        availableTickets:
+          type: integer
+        image:
+          type: string
+    EventInput:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Tech Conference 2024"
+        date:
+          type: string
+          format: date-time
+          example: "2024-12-01T10:00:00Z"
+        location:
+          type: string
+          example: "Convention Center, NY"
+        price:
+          type: number
+          example: 49.99
+        totalTickets:
+          type: integer
+          example: 100
+        image:
+          type: string
+          example: "https://placehold.co/600x400"
+        description:
+           type: string
+           example: "A great tech event."
+    Booking:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        event:
+          $ref: '#/components/schemas/Event'
+        ticketId:
+          type: string
+        count:
+          type: integer
+        totalCost:
+          type: number
