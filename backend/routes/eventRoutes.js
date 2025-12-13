@@ -4,9 +4,7 @@ import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// @desc    Fetch all events
-// @route   GET /api/events
-// @access  Public
+
 router.get('/', async (req, res) => {
   try {
     const events = await Event.find({});
@@ -16,9 +14,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// @desc    Fetch single event
-// @route   GET /api/events/:id
-// @access  Public
 router.get('/:id', async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -33,9 +28,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// @desc    Create a new event
-// @route   POST /api/events
-// @access  Private/Admin
+
 router.post('/', protect, admin, async (req, res) => {
   const { title, description, date, location, price, image, totalTickets } = req.body;
 
@@ -48,7 +41,7 @@ router.post('/', protect, admin, async (req, res) => {
       price,
       image,
       totalTickets,
-      availableTickets: totalTickets // Initially, available = total
+      availableTickets: totalTickets
     });
 
     const createdEvent = await event.save();
@@ -58,9 +51,31 @@ router.post('/', protect, admin, async (req, res) => {
   }
 });
 
-// @desc    Delete an event
-// @route   DELETE /api/events/:id
-// @access  Private/Admin
+
+router.put('/:id', protect, admin, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (event) {
+      event.title = req.body.title || event.title;
+      event.description = req.body.description || event.description;
+      event.date = req.body.date || event.date;
+      event.location = req.body.location || event.location;
+      event.price = req.body.price || event.price;
+      event.totalTickets = req.body.totalTickets || event.totalTickets;
+      event.availableTickets = req.body.totalTickets || event.availableTickets; 
+      event.image = req.body.image || event.image;
+
+      const updatedEvent = await event.save();
+      res.json(updatedEvent);
+    } else {
+      res.status(404).json({ message: 'Event not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 router.delete('/:id', protect, admin, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);

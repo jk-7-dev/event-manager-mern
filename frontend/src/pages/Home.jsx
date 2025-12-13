@@ -42,9 +42,9 @@ const Home = () => {
         <div className="row g-4">
           {events.map((event) => (
             <div className="col-12 col-sm-6 col-lg-4" key={event._id}>
-              {/* Using custom matte-card class */}
               <div className="card h-100 matte-card border-0">
                 
+                {/* Event Image */}
                 <div className="card-img-wrapper position-relative">
                    <img 
                      src={event.image || 'https://placehold.co/600x400?text=Event+Image'} 
@@ -72,15 +72,25 @@ const Home = () => {
 
                   <div className="mt-auto d-flex justify-content-between align-items-center">
                     <div>
-                        <span className="text-muted small d-block">ab</span>
+                        {/* --- FIXED: "ab" replaced with Available Seats --- */}
+                        <span className={`small fw-bold d-block mb-1 ${event.availableTickets > 0 ? 'text-success' : 'text-danger'}`}>
+                            {event.availableTickets > 0 
+                              ? `● ${event.availableTickets} Seats Left` 
+                              : '● Sold Out'}
+                        </span>
+                        
                         <h4 className="text-accent fw-bold mb-0">
-                          ${event.price}
+                          Rs. {event.price}
                         </h4>
                     </div>
                     
-                    <Link to={`/event/${event._id}`} className="btn btn-gradient-primary px-4">
-                      Book Now
-                    </Link>
+                    {event.availableTickets > 0 ? (
+                      <Link to={`/event/${event._id}`} className="btn btn-gradient-primary px-4">
+                        Book Now
+                      </Link>
+                    ) : (
+                      <button className="btn btn-secondary px-4" disabled>Sold Out</button>
+                    )}
                   </div>
                 </div>
               </div>

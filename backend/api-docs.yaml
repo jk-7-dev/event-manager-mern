@@ -1,10 +1,10 @@
 openapi: "3.0.0"
 info:
   title: Event Manager API
-  description: API for managing events, bookings, and authentication.
-  version: "1.0.0"
+  description: API for managing events, bookings, and digital tickets.
+  version: "1.1.0"
   contact:
-    name: "Developer"
+    name: "Event Manager Admin"
 servers:
   - url: http://localhost:5000
     description: Local Development Server
@@ -17,6 +17,7 @@ components:
 security:
   - bearerAuth: []
 paths:
+  # --- AUTHENTICATION ---
   /api/auth/register:
     post:
       summary: Register a new user
@@ -36,11 +37,11 @@ paths:
               properties:
                 name:
                   type: string
-                  example: "John Doe"
+                  example: "Arun Kumar"
                 email:
                   type: string
                   format: email
-                  example: "user@example.com"
+                  example: "arun@test.com"
                 password:
                   type: string
                   format: password
@@ -69,7 +70,7 @@ paths:
                 email:
                   type: string
                   format: email
-                  example: "user@example.com"
+                  example: "admin@test.com"
                 password:
                   type: string
                   format: password
@@ -79,6 +80,8 @@ paths:
           description: Successful login (returns Token)
         '401':
           description: Invalid credentials
+
+  # --- EVENTS ---
   /api/events:
     get:
       summary: Get all events
@@ -109,6 +112,7 @@ paths:
           description: Event created successfully
         '401':
           description: Unauthorized (Admin access required)
+
   /api/events/{id}:
     get:
       summary: Get single event details
@@ -131,6 +135,36 @@ paths:
                 $ref: '#/components/schemas/Event'
         '404':
           description: Event not found
+    
+    put:
+      summary: Update an event (Admin Only)
+      tags:
+        - Events
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The event ID to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventInput'
+      responses:
+        '200':
+          description: Event updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Event not found
+        '401':
+          description: Unauthorized
+
     delete:
       summary: Delete an event (Admin Only)
       tags:
@@ -147,6 +181,8 @@ paths:
           description: Event deleted successfully
         '404':
           description: Event not found
+
+  # --- BOOKINGS ---
   /api/bookings:
     post:
       summary: Book tickets
@@ -174,6 +210,7 @@ paths:
           description: Booking successful
         '400':
           description: Not enough tickets or invalid data
+
   /api/bookings/mybookings:
     get:
       summary: Get current user's bookings
@@ -188,6 +225,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Booking'
+
   /api/bookings/verify/{ticketId}:
     get:
       summary: Verify ticket status (Public)
@@ -206,6 +244,8 @@ paths:
           description: Valid ticket details
         '404':
           description: Ticket not found
+
+# --- SCHEMAS ---
 components:
   schemas:
     Event:
@@ -222,28 +262,31 @@ components:
           type: string
         price:
           type: number
+          description: Price in Rupees (Rs.)
         totalTickets:
           type: integer
         availableTickets:
           type: integer
         image:
           type: string
+        description:
+          type: string
     EventInput:
       type: object
       properties:
         title:
           type: string
-          example: "Tech Conference 2024"
+          example: "Music Concert 2026"
         date:
           type: string
           format: date-time
-          example: "2024-12-01T10:00:00Z"
+          example: "2026-01-01T18:00:00Z"
         location:
           type: string
-          example: "Convention Center, NY"
+          example: "Nehru Stadium, Chennai"
         price:
           type: number
-          example: 49.99
+          example: 499
         totalTickets:
           type: integer
           example: 100
@@ -252,7 +295,7 @@ components:
           example: "https://placehold.co/600x400"
         description:
            type: string
-           example: "A great tech event."
+           example: "An amazing live music experience."
     Booking:
       type: object
       properties:

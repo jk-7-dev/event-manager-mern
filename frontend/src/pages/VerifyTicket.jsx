@@ -62,7 +62,7 @@ const VerifyTicket = () => {
               </div>
               <div className="d-flex justify-content-between">
                 <span className="text-muted">Total Paid</span>
-                <span className="fw-bold text-success">${ticket.totalCost}</span>
+                <span className="fw-bold text-success">Rs.{ticket.totalCost}</span>
               </div>
             </div>
 

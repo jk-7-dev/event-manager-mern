@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
+  const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState({
     title: '', description: '', date: '', location: '', price: '', totalTickets: '', image: ''
   });
@@ -11,7 +12,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('userInfo'));
 
-  // Define Palette Constants for Inline Styles (to ensure exact match)
+  // Define Palette Constants
   const colors = {
     primaryBlue: '#7BBBFF',
     darkNavy: '#050F2A',
@@ -40,16 +41,42 @@ const AdminDashboard = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleEdit = (event) => {
+    setEditId(event._id);
+    setFormData({
+      title: event.title,
+      description: event.description,
+      date: new Date(event.date).toISOString().slice(0, 16),
+      location: event.location,
+      price: event.price,
+      totalTickets: event.totalTickets,
+      image: event.image
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancel = () => {
+    setEditId(null);
+    setFormData({ title: '', description: '', date: '', location: '', price: '', totalTickets: '', image: '' });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const config = { headers: { Authorization: `Bearer ${user.token}` } };
+    
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('http://localhost:5000/api/events', formData, config);
-      alert('Event Created Successfully!');
-      setFormData({ title: '', description: '', date: '', location: '', price: '', totalTickets: '', image: '' });
+      if (editId) {
+        await axios.put(`http://localhost:5000/api/events/${editId}`, formData, config);
+        alert('Event Updated Successfully!');
+        handleCancel();
+      } else {
+        await axios.post('http://localhost:5000/api/events', formData, config);
+        alert('Event Created Successfully!');
+        handleCancel();
+      }
       fetchEvents();
     } catch (err) {
-      alert(err.response?.data?.message || 'Error creating event');
+      alert(err.response?.data?.message || 'Error saving event');
     }
   };
 
@@ -71,10 +98,10 @@ const AdminDashboard = () => {
         <i className="bi bi-speedometer2 me-2"></i> Admin Dashboard
       </h2>
       
-      {/* --- CREATE EVENT FORM --- */}
-      <div className="card border-0 shadow-sm mb-5" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+      {/* --- CREATE / EDIT FORM --- */}
+      <div className="card border-0 shadow-sm mb-5 matte-card">
         <div className="card-header text-white p-3" style={{ backgroundColor: colors.darkNavy }}>
-          <h5 className="mb-0 fw-bold">Create New Event</h5>
+          <h5 className="mb-0 fw-bold">{editId ? 'Edit Event' : 'Create New Event'}</h5>
         </div>
         <div className="card-body p-4 bg-white">
           <form onSubmit={handleSubmit} className="row g-4">
@@ -110,7 +137,8 @@ const AdminDashboard = () => {
             </div>
             
             <div className="col-6 col-md-2">
-              <label className="form-label fw-bold text-secondary">Price ($)</label>
+              {/* FIXED: Label uses Rs. */}
+              <label className="form-label fw-bold text-secondary">Price (Rs.)</label>
               <input type="number" name="price" className="form-control" value={formData.price} onChange={handleChange} required 
                 style={{ borderColor: colors.primaryBlue }} />
             </div>
@@ -121,14 +149,18 @@ const AdminDashboard = () => {
                 style={{ borderColor: colors.primaryBlue }} />
             </div>
             
-            <div className="col-12 mt-4">
-              <button type="submit" className="btn w-100 fw-bold text-white py-2" 
-                style={{ backgroundColor: colors.darkNavy, borderRadius: '8px', transition: '0.3s' }}
-                onMouseOver={(e) => e.target.style.backgroundColor = colors.purple}
-                onMouseOut={(e) => e.target.style.backgroundColor = colors.darkNavy}
+            <div className="col-12 mt-4 d-flex gap-2">
+              <button type="submit" className="btn fw-bold text-white flex-grow-1 py-2" 
+                style={{ backgroundColor: editId ? '#FFC107' : colors.darkNavy, color: editId ? '#000' : '#fff' }}
               >
-                + Create Event
+                {editId ? 'Update Event' : '+ Create Event'}
               </button>
+              
+              {editId && (
+                <button type="button" className="btn btn-secondary px-4 fw-bold" onClick={handleCancel}>
+                  Cancel
+                </button>
+              )}
             </div>
           </form>
         </div>
@@ -140,41 +172,50 @@ const AdminDashboard = () => {
         <table className="table table-hover mb-0 align-middle">
           <thead className="text-white" style={{ backgroundColor: colors.darkNavy }}>
             <tr>
-              <th className="py-3">Title</th>
+              <th className="py-3 ps-4">Title</th>
               <th className="py-3">Date</th>
               <th className="py-3">Location</th>
               <th className="py-3">Price</th>
               <th className="py-3">Stock</th>
-              <th className="py-3 text-end pe-4">Action</th>
+              <th className="py-3 text-end pe-4">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white">
             {events.map((event) => (
               <tr key={event._id}>
-                <td className="fw-bold" style={{ color: colors.darkNavy }}>{event.title}</td>
+                <td className="fw-bold ps-4" style={{ color: colors.darkNavy }}>{event.title}</td>
                 <td className="text-muted">{new Date(event.date).toLocaleDateString()}</td>
                 <td className="text-muted">{event.location}</td>
-                <td className="fw-bold" style={{ color: colors.primaryBlue }}>${event.price}</td>
+                {/* FIXED: Value uses Rs. */}
+                <td className="fw-bold" style={{ color: colors.primaryBlue }}>Rs. {event.price}</td>
                 <td>
                   <span className="badge" style={{ backgroundColor: colors.purple, color: 'white' }}>
                     {event.availableTickets} / {event.totalTickets}
                   </span>
                 </td>
                 <td className="text-end pe-4">
+                  {/* Edit Button - Solid Icon */}
+                  <button 
+                    className="btn btn-sm btn-outline-primary me-2"
+                    onClick={() => handleEdit(event)}
+                    title="Edit Event"
+                    style={{ borderRadius: '8px', padding: '6px 10px' }}
+                  >
+                    <i className="bi bi-pencil-fill"></i>
+                  </button>
+                  
+                  {/* Delete Button - Solid Icon */}
                   <button 
                     className="btn btn-sm btn-outline-danger" 
                     onClick={() => handleDelete(event._id)}
+                    title="Delete Event"
+                    style={{ borderRadius: '8px', padding: '6px 10px' }}
                   >
-                    <i className="bi bi-trash"></i> Delete
+                    <i className="bi bi-trash-fill"></i>
                   </button>
                 </td>
               </tr>
             ))}
-            {events.length === 0 && (
-              <tr>
-                <td colSpan="6" className="text-center py-4 text-muted">No events found. Create one above!</td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
