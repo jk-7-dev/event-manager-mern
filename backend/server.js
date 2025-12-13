@@ -8,56 +8,55 @@ import bookingRoutes from './routes/bookingRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import yaml from 'yamljs';
 
+// --- NEW IMPORTS FOR PATH RESOLUTION ---
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 dotenv.config();
 
-const app = express();
+// --- DEFINE __dirname FOR ES MODULES ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+const app = express();
 app.use(express.json());
 
-// --- 1. UPDATED CORS CONFIGURATION ---
-// We allow both localhost (for testing) and your future Vercel frontend
+// CORS Config
 app.use(cors({
-    origin: [
-        "http://localhost:5173", 
-        // You will add your Vercel Frontend URL here later (e.g. https://event-manager-ui.vercel.app)
-    ],
+    origin: ["http://localhost:5173", "https://event-manager-ui.vercel.app"],
     credentials: true
 }));
 
-// --- 2. UPDATED DB CONNECTION FOR SERVERLESS ---
+// DB Connection
 const connectDB = async () => {
-  // Check if we already have a connection to avoid reconnecting
-  if (mongoose.connections[0].readyState) {
-    return;
-  }
-  
+  if (mongoose.connections[0].readyState) return;
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB Connected`);
   } catch (error) {
     console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 };
-
-// Connect to DB immediately
 connectDB();
 
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes); 
 
-// Swagger Docs
-const swaggerDocument = yaml.load('./api-docs.yaml');
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// --- FIXED SWAGGER LOADING ---
+// We use path.join to create a rock-solid absolute path to the file
+try {
+  const swaggerDocument = yaml.load(path.join(__dirname, 'api-docs.yaml'));
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+} catch (error) {
+  console.error("Could not load API Docs:", error);
+}
 
-// --- 3. UPDATED LISTEN LOGIC FOR VERCEL ---
-// Only listen to port if we are NOT in production (i.e., running locally)
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
@@ -65,5 +64,4 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-// Export the app for Vercel
 export default app;
