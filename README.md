@@ -18,6 +18,7 @@ A comprehensive Event Booking & Management System built using the MERN stack. It
 - Create, update, and delete events
 - Dashboard overview of events and ticket sales
 - Real-time ticket inventory tracking
+  # NOTE : For Admin access please register the user and change role isAdmin to true  
 
 ---
 
