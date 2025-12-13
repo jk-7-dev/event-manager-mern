@@ -24,5 +24,5 @@ A full-stack Event Booking & Ticket Management application built with the MERN s
 
 ### 1. Clone the Repository
 ```bash
-git clone <your-repo-link>
+git clone <https://github.com/jk-7-dev/event-manager-mern.git>
 cd event-booking-mern
