@@ -27,17 +27,17 @@ A comprehensive Event Booking & Management System built using the MERN stack. It
 ### Home Page | Event Details
 | Home Page | Event Details |
 |----------|---------------|
-| <img src="" width="100%" alt="Home Page"> | <img src="" width="100%" alt="Event Details"> |
+| <img src="https://github.com/jk-7-dev/event-manager-mern/blob/main/frontend/src/assets/Home.png?raw=true" width="100%" alt="Home Page"> | <img src="https://github.com/jk-7-dev/event-manager-mern/blob/main/frontend/src/assets/Event%20Details.png?raw=true" width="100%" alt="Event Details"> |
 
 ### Payment Page | Digital Ticket
 | Payment Page | Ticket with QR |
 |--------------|----------------|
-| <img src="" width="100%" alt="Payment Page"> | <img src="" width="100%" alt="Digital Ticket"> |
+| <img src="https://github.com/jk-7-dev/event-manager-mern/blob/main/frontend/src/assets/payment.png?raw=true" width="100%" alt="Payment Page"> | <img src="https://github.com/jk-7-dev/event-manager-mern/blob/main/frontend/src/assets/MyBooking.png?raw=true" width="100%" alt="Digital Ticket"> |
 
 ### Admin Dashboard | Ticket Verification
 | Admin Dashboard | Verification Page |
 |----------------|-------------------|
-| <img src="" width="100%" alt="Admin Dashboard"> | <img src="" width="100%" alt="Verification Page"> |
+| <img src="https://github.com/jk-7-dev/event-manager-mern/blob/main/frontend/src/assets/Admin.png?raw=true" width="100%" alt="Admin Dashboard"> | <img src="https://github.com/jk-7-dev/event-manager-mern/blob/main/frontend/src/assets/Ticket%20Verification.png?raw=true" width="100%" alt="Verification Page"> |
 
 ---
 
